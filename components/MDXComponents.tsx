@@ -15,6 +15,7 @@ import {
   MDXFilter5,
   MDXFilter6,
 } from './MDXFilter-1'
+import CodePenEmbed from './CodePenEmbed'
 
 export const components: MDXComponents = {
   Image,
@@ -31,4 +32,5 @@ export const components: MDXComponents = {
   MDXFilter4,
   MDXFilter5,
   MDXFilter6,
+  CodePenEmbed,
 }
