@@ -20,3 +20,15 @@ css在布局上有这么几种模式：
 ## Flow
 遵循的是传统的流式布局模式，类似于一些文档处理软件。他的一个特点就是没有对 `z-index` 属性的响应。
 
+在流式布局中，可见元素的`display`属性值无非这三种：`block`、`inline`、`inline-block`。
+
+- `inline`元素：它始终包裹着内容，你无法设置它的`width`和`height`属性（`<img />`、`<video />`、`<canvas />`、`<button />`元素除外）。 
+
+当用 div 包裹一个img元素的时候，div 的高度会略微大于 img 元素的高度，这是因为 img 元素的 `vertical-align` 属性默认值是 `baseline`。可以通过两种方式来消除，1、将
+img元素的`display`属性设置为`block`。2、`line-height`属性设置为`0`。
+
+在有换行的情况下，对行内元素设置内边距，它只能应用到元素的首尾两端。但是我们可以通过 `box-decoration-break: clone` 来将内边距应用到每个换行的两端。
+ 
+- `block`元素：默认是要占满父元素的宽度的。不管如何一行只能有一个`block`元素。对于`width`属性，有一个不常用的值：`fit-content`。它是根据内容自动调整宽度。
+
+- `inline-block`元素：没有换行了，相对于`inline`元素，他可以设置`width`和`height`属性。
