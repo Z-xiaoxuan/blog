@@ -32,3 +32,51 @@ img元素的`display`属性设置为`block`。2、`line-height`属性设置为`0
 - `block`元素：默认是要占满父元素的宽度的。不管如何一行只能有一个`block`元素。对于`width`属性，有一个不常用的值：`fit-content`。它是根据内容自动调整宽度。
 
 - `inline-block`元素：没有换行了，相对于`inline`元素，他可以设置`width`和`height`属性。
+
+## Position
+其中有四个属性，`relative`, `absolute`, `fixed`, or `sticky`，他们每个都有自己不同的布局算法。
+
+### Relative
+有两点：
+- `top`、`right`、`bottom`、`left`属性，只有在`position`属性设置为`relative`时才有效。
+- 约束某些子元素
+
+在移动元素的时候，绝对不会改变元素的大小。
+
+###  Absolute
+
+将元素移出了文档流.
+
+居中定位小技巧：
+- `margin: auto`
+- 四个方向上的数值要相同，一般都设置为 0px
+- 要有确定的宽高，否则宽高会动态变化
+
+### Fixed
+
+将元素移除了文档流，默认它只根据viewport来定位。
+但如果他的父元素中有 `transform` 或者 `will-change: transform` 属性，那么它会根据父元素来定位。
+
+### sticky
+
+不会脱离文档流
+始终是在父元素中
+
+常见的几种失效原因：
+- 设置了`sticky`元素，的祖先元素中，有`overflow`属性设置为`hidden`、`scroll`、`auto`。这时他的粘黏上下文是这个祖先元素。
+- 父元素的高度不够大，因为`sticky`元素的活动范围是在父元素中。
+
+还有一点，`sticky`元素的在谷歌浏览器中，会有1px的误差。
+
+## 默认的层级关系
+
+1、 在流式布局中，通过margin负值造成的层叠，只有背景是层叠的，其中的内容总是浮在最前面。
+2、 position布局的层叠要比流式布局的高
+3、都是position的话，DOM的顺序决定谁在上面
+
+### z-index
+如果我们不想要默认的层级关系，可以通过 `z-index` 来改变。
+
+他只作用于position布局的元素。其中默认值都是 `auto`，相当于 0 
+
+isolation: isolate 的主要作用是创建一个新的堆叠上下文，从而隔离元素及其*子元素*的层叠关系，使其不受外部元素层叠顺序的影响。
