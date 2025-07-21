@@ -80,3 +80,21 @@ img元素的`display`属性设置为`block`。2、`line-height`属性设置为`0
 他只作用于position布局的元素。其中默认值都是 `auto`，相当于 0 
 
 isolation: isolate 的主要作用是创建一个新的堆叠上下文，从而隔离元素及其*子元素*的层叠关系，使其不受外部元素层叠顺序的影响。
+
+## Flexbox
+flex中有两个不忽视的尺寸概念：*最小内容尺寸*和*假设尺寸*（针对子元素）。
+
+最小内容尺寸： 指的是元素内容在没有溢出的情况下的最小尺寸。
+假设尺寸： `flex-basis`或`width`。
+
+在flex容器中，子元素的`height`和`width`属性不再是硬性规定(主轴方向)，他更像是一种建议值。
+
+`flex-basis`和`width`起的作用大致相同，
+
+flex属性是`flex-grow`、`flex-shrink`、`flex-basis`的简写。flex:1 等价于 flex:1 1 0%。(多个字元素设置：flex-grow:1 并不会将他们的宽度设为相等，需要flex-basis: 0%才行)
+
+`min-width`和`max-width`可以限制 `flex-grow`/`flex-shrink`的伸缩范围。
+
+在flex布局中，margin 不会有塌陷
+
+- `align-items: baseline;`文字基线对齐有一个特点：即使有多层级的盒子，依然可以起作用。
