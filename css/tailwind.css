@@ -46,6 +46,17 @@
   --z-60: 60;
   --z-70: 70;
   --z-80: 80;
+
+  --animate-loop: loop 0.5s linear infinite;
+
+  @keyframes loop {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 /*
