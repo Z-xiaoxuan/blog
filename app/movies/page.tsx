@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
+import Giscus from '@giscus/react'
+
 gsap.registerPlugin(ScrollTrigger)
 
 export default function TimelineNav() {
@@ -138,6 +140,12 @@ export default function TimelineNav() {
     },
   ]
   const [activeSection, setActiveSection] = useState('section1')
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e: MouseEvent) => {
+    setMousePosition({ x: e.clientX, y: e.clientY })
+    console.log(mousePosition)
+  }
 
   useEffect(() => {
     document.querySelectorAll('.sections').forEach((section) => {
@@ -151,10 +159,8 @@ export default function TimelineNav() {
           setActiveSection(section.id)
           const activeEl = document.querySelector(`.active`)
 
-          console.log(activeEl)
           if (activeEl) {
             activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            console.log('kkkkk')
           }
         },
         onEnterBack: () => {
@@ -166,12 +172,17 @@ export default function TimelineNav() {
         },
       })
     })
-  }, [])
+
+    document.addEventListener('click', handleMouseMove)
+    return () => {
+      document.removeEventListener('click', handleMouseMove)
+    }
+  }, [handleMouseMove])
 
   return (
     <>
       <div id="container" className="h-screen overflow-auto">
-        <nav className="fixed left-0 flex h-full w-96 flex-col flex-nowrap justify-end bg-gradient-to-r from-black/80 to-transparent pt-14 pl-7 text-white">
+        <nav className="fixed left-0 flex h-full w-96 flex-col flex-nowrap justify-end bg-gradient-to-r from-black to-transparent pt-7 pl-7 text-white">
           <ul className="no-scrollbar h-full overflow-x-hidden overflow-y-auto pl-7">
             {sections.map((section, idx) => (
               // 键盘可访问性的EESlint提醒
@@ -230,6 +241,26 @@ export default function TimelineNav() {
             />
           </section>
         ))}
+
+        <div className="fixed top-1/2 left-1/2 h-3/4 w-1/3 -translate-x-1/2 -translate-y-1/2 overflow-scroll rounded-md bg-black/20 p-4 backdrop-blur-2xl">
+          <div className="h-10 bg-amber-300"></div>
+
+          <Giscus
+            id="comments"
+            repo="Z-xiaoxuan/blog"
+            repoId="R_kgDOOQ7qyw"
+            category="General"
+            categoryId="DIC_kwDOOQ7qy84CuCA_"
+            mapping="pathname"
+            reactionsEnabled="0"
+            strict="0"
+            emitMetadata="0"
+            inputPosition="top"
+            theme="fro"
+            lang="zh-CN"
+            loading="lazy"
+          />
+        </div>
       </div>
     </>
   )
