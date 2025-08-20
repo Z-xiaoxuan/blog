@@ -1,15 +1,11 @@
 'use client'
-// import SocialLinks from '@/components/SocialLinks'
+
 import Image from 'next/image'
-import Link from 'next/link'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
-import { useEffect } from 'react'
+import SplitText from 'gsap/SplitText'
+import { useEffect, useState } from 'react'
 
-//  4. APEX 5.两只猫猫 6.老家 7. 直男  8. 吉他初学者 9. 做饭（打卤面）10.喜欢吃辣 11.山西大学（音乐协会）12.喜欢的乐队
-// 我们每个人都个性鲜明
-
-const COLORS = ['#bbf7d0', '#99f6e4', '#bfdbfe', '#ddd6fe', '#f5d0fe', '#fed7aa', '#fee2e2']
 const TAGS = [
   '痛仰乐队',
   '刺猬',
@@ -30,7 +26,7 @@ const ROWS = 3
 const TAGS_PER_ROW = 6
 
 const random = (min, max) => Math.floor(Math.random() * (max - min)) + min
-const shuffle = (arr) => [...arr].sort(() => 0.5 - Math.random())
+const shuffle = (arr) => [...arr].sort()
 
 const InfiniteLoopSlider = ({ children, duration, reverse = false }) => {
   return (
@@ -57,58 +53,114 @@ const Tag = ({ text }) => (
 
 export default function Home() {
   useEffect(() => {
+    // 动画部分
     gsap.registerPlugin(ScrollTrigger)
+    gsap.registerPlugin(SplitText)
 
     const tl = gsap.timeline()
 
-    gsap.to('#avatar', {
-      scrollTrigger: {
-        trigger: '#second',
-        start: 'top top',
-        end: '+=100%',
-        markers: true,
-        pin: true,
-        scrub: true,
-      },
-      rotation: 360,
+    const split = new SplitText('#text', {
+      type: 'lines',
+      linesClass: 'line',
+    })
+
+    tl.to(split.lines, {
+      rotationX: -100,
+      transformOrigin: '50% 50% -60px',
+      opacity: 0,
+      ease: 'power3',
+      stagger: 0.25,
+    })
+      .to('#avatar4', {
+        scale: 0,
+        ease: 'power1.in',
+        delay: 0,
+      })
+      .to(
+        '#avatar3',
+        {
+          scale: 0,
+          ease: 'power1.in',
+          delay: 0.1,
+        },
+        '<'
+      )
+      .to(
+        '#avatar2',
+        {
+          scale: 0,
+          ease: 'power1.in',
+          delay: 0.1,
+        },
+        '<'
+      )
+      .to(
+        '#avatar1',
+        {
+          scale: 0,
+          ease: 'power1.in',
+          delay: 0.1,
+        },
+        '<'
+      )
+
+    ScrollTrigger.create({
+      animation: tl,
+      trigger: '#second',
+      start: 'top top',
+      end: '+=100%',
+      markers: true,
+      pin: true,
+      scrub: true,
     })
   }, [])
 
   return (
     <>
-      <div id="first" className="flex h-screen items-center">
-        <aside className="flex-1">
-          <Image
-            src="/static/images/avatar.png"
-            className="mx-auto rounded-full"
-            alt="avatar"
-            width={200}
-            height={200}
-          />
-        </aside>
-        <section className="flex-2">
-          <p id="text" className="text-4xl">
-            Hi, I'm Tim, a full stack developer, a maintainer of Next.js and a passionate advocate
-            for open source and community-driven development.
-            <Link className="hover:text-primary-500 transition-colors duration-200" href="/blog">
-              博客
-            </Link>
-            <Link className="hover:text-primary-500 transition-colors duration-200" href="/movies">
-              影视
-            </Link>
-          </p>
-        </section>
-      </div>
-
-      <div id="second" className="z-100 flex h-screen items-center justify-center bg-amber-300">
-        {/* <Image
-          id="avatar"
-          src="/static/images/avatar.png"
-          className="mx-auto rounded-full"
-          alt="avatar"
-          width={200}
-          height={200}
-        /> */}
+      <div id="second" className="relative flex h-screen items-center justify-center bg-black">
+        <div className="absolute top-1/2 left-1/2 flex w-full -translate-x-1/2 -translate-y-1/2">
+          <div className="relative aspect-square flex-1">
+            <Image
+              id="avatar1"
+              src="/static/images/sparrowhawk-avatar.jpg"
+              alt="avatar"
+              className="absolute"
+              width={200}
+              height={200}
+            />
+            <Image
+              id="avatar2"
+              src="/static/images/sparrowhawk-avatar.jpg"
+              alt="avatar"
+              width={200}
+              height={200}
+              className="absolute"
+            />
+            <Image
+              id="avatar3"
+              src="/static/images/sparrowhawk-avatar.jpg"
+              alt="avatar"
+              width={200}
+              height={200}
+              className="absolute"
+            />
+            <Image
+              id="avatar4"
+              src="/static/images/sparrowhawk-avatar.jpg"
+              alt="avatar"
+              width={200}
+              height={200}
+              className="absolute"
+            />
+          </div>
+          <div className="flex-1">
+            <p id="text">
+              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Laborum, ut pariatur!
+              Accusamus libero asperiores expedita eligendi vitae ab tenetur cum ipsam veniam
+              explicabo aut hic sit, tempore culpa velit! Sint?
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="mx-auto max-w-5xl py-10">
@@ -116,12 +168,12 @@ export default function Home() {
           className="grid grid-cols-8 gap-3"
           style={{
             gridTemplateAreas: `"map map map map tall tall mbti mbti"
-               "map map map map cat1 cat1 cat2 cat2"
-               "taiyuan taiyuan taiyuan zhi  cat1 cat1 cat2 cat2"
-               "daxue daxue yue yue yue yue li li"
-               "apex apex yue yue yue yue la la"
-               "jita cook cook . . . . ."
-               `,
+                         "map map map map cat1 cat1 cat2 cat2"
+                         "taiyuan taiyuan taiyuan zhi  cat1 cat1 cat2 cat2"
+                         "daxue daxue yue yue yue yue li li"
+                         "apex apex yue yue yue yue la la"
+                         "jita cook cook . . . . ."
+                         `,
           }}
         >
           <div className="grid-item rounded-md bg-gray-900 p-2" style={{ gridArea: 'map' }}>
@@ -174,7 +226,7 @@ export default function Home() {
           {/* 两只宠物的照片可以左右切换查看 */}
           <div className="rounded-md bg-gray-900 p-3" style={{ gridArea: 'cat1' }}>
             <Image
-              src={`https://picsum.photos/id/40/200/200?random=2`}
+              src={`https://picsum.photos/id/40/200/200`}
               alt="cat1"
               className="w-full rounded-md"
               height={150}
@@ -186,7 +238,7 @@ export default function Home() {
           </div>
           <div className="rounded-md bg-gray-900 p-3" style={{ gridArea: 'cat2' }}>
             <Image
-              src={`https://picsum.photos/id/41/200/200?random=1`}
+              src={`https://picsum.photos/id/41/200/200`}
               alt="cat2"
               className="w-full rounded-md"
               height={150}
@@ -201,7 +253,7 @@ export default function Home() {
             style={{ gridArea: 'taiyuan' }}
           >
             <Image
-              src="https://picsum.photos/id/42/200/200?random=1"
+              src="https://picsum.photos/id/42/200/200"
               alt="山西太原"
               fill={true}
               objectFit="cover"
@@ -236,11 +288,7 @@ export default function Home() {
           >
             <div className="relative flex flex-col gap-y-4 rounded-md py-6">
               {[...new Array(ROWS)].map((_, i) => (
-                <InfiniteLoopSlider
-                  key={i}
-                  duration={random(DURATION - 5000, DURATION + 5000)}
-                  reverse={i % 2 === 1}
-                >
+                <InfiniteLoopSlider key={i} duration={15000} reverse={i % 2 === 1}>
                   {shuffle(TAGS)
                     .slice(0, TAGS_PER_ROW)
                     .map((tag) => (
