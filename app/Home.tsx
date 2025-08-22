@@ -175,7 +175,7 @@ export default function Home() {
           目前在自学吉他中～
         </p>
 
-        <div id="grid" className="mx-auto max-w-5xl py-10">
+        <div id="grid" className="mx-auto max-w-5xl py-20">
           <div
             className="grid grid-cols-8 gap-3"
             style={{
@@ -363,6 +363,8 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      <div className="h-10"></div>
     </>
   )
 }
