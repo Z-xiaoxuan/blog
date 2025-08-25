@@ -53,8 +53,6 @@ export default function TimelineNav() {
         }
       },
     })
-
-    return
   }, [movies])
 
   return (
@@ -72,7 +70,7 @@ export default function TimelineNav() {
         <div className="mx-auto my-64 grid w-fit grid-cols-2 gap-x-4 gap-y-5">
           {movies.map((movie, index) => (
             <div
-              className={`skewElem flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
+              className={`skewElem shadow-primary-800 flex shadow-md ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
               key={index}
             >
               <div className="relative">
@@ -83,7 +81,7 @@ export default function TimelineNav() {
                   src={movie.url.trim()}
                   alt="post"
                 />
-                <div className="absolute inset-0" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 from-15% to-transparent to-25%" />
                 <div className="absolute bottom-2 left-4">
                   <p className="text-2xl">{movie.name}</p>
                   <p>{movie.description}</p>
