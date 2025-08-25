@@ -7,20 +7,33 @@ import Image from 'next/image'
 import Giscus from '@giscus/react'
 import { createMovies } from '../lib/actions'
 import { fetchMovieData } from '../lib/data'
+import { useSearchParams } from 'next/navigation'
+import { Movie } from '../lib/type'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function TimelineNav() {
-  const [movies, setMovies] = useState([])
+  const [movies, setMovies] = useState<Movie[]>([])
 
-  // make the right edge "stick" to the scroll bar. force3D: true improves performance
+  const searchParams = useSearchParams()
+
+  const add = searchParams.get('add')
 
   useEffect(() => {
-    gsap.set('.skewElem', { transformOrigin: 'right center', force3D: true })
+    const res = fetchMovieData()
+    res.then((res) => {
+      setMovies(res ?? [])
+      const el = document.querySelector('.skewElem')
+      console.log('el', el)
+    })
+  }, [])
+
+  useEffect(() => {
+    gsap.set(['.skewElem'], { transformOrigin: 'right center', force3D: true })
 
     const proxy = { skew: 0 }
-    const skewSetter = gsap.quickSetter('.skewElem', 'skewY', 'deg') // fast
-    const clamp = gsap.utils.clamp(-20, 20) // don't let the skew go beyond 20 degrees.
+    const skewSetter = gsap.quickSetter('.skewElem', 'skewY', 'deg')
+    const clamp = gsap.utils.clamp(-20, 20)
 
     ScrollTrigger.create({
       scroller: '#container',
@@ -42,35 +55,43 @@ export default function TimelineNav() {
     })
 
     return
-  }, [])
-
-  // fetchMovieData().then((res) => {
-  //   setMovies(res)
-  //   console.log('res', res)
-  // })
+  }, [movies])
 
   return (
     <>
       <div id="container" className="h-screen overflow-auto">
-        {/* <form action={createMovies} className="text-pink-500">
-          <input id="name" type="text" name="name" />
-          <input id="url" type="text" name="url" />
-          <input id="description" type="text" name="description" />
+        <form action={createMovies} className={add === 'true' ? 'block' : 'hidden'}>
+          <input id="name" type="text" name="name" placeholder="name" />
+          <input id="url" type="text" name="url" placeholder="url" />
+          <input id="description" type="text" name="description" placeholder="description" />
           <button type="submit" className="cursor-pointer border border-amber-300">
             Submit
           </button>
-        </form> */}
+        </form>
 
         <div className="mx-auto my-64 grid w-fit grid-cols-2 gap-x-4 gap-y-5">
-          {Array.from({ length: 20 }, (_, index) => (
-            <Image
-              className="skewElem rounded"
+          {movies.map((movie, index) => (
+            <div
+              className={`skewElem flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
               key={index}
-              height={400}
-              width={300}
-              src="https://picsum.photos/300/400"
-              alt="post"
-            />
+            >
+              <div className="relative">
+                <Image
+                  className="rounded"
+                  height={400}
+                  width={300}
+                  src={movie.url.trim()}
+                  alt="post"
+                />
+                <div className="absolute inset-0" />
+                <div className="absolute bottom-2 left-4">
+                  <p className="text-2xl">{movie.name}</p>
+                  <p>{movie.description}</p>
+                </div>
+              </div>
+
+              {/* <div className={index % 2 === 0 ? 'order-first' : 'order-last'}>一些自己的小发</div> */}
+            </div>
           ))}
         </div>
 

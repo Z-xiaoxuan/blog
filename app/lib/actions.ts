@@ -33,4 +33,5 @@ export async function createMovies(formDate: FormData) {
   }
 
   revalidatePath('/movies')
+  redirect('/movies')
 }
