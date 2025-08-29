@@ -1,0 +1,165 @@
+---
+title: '网络'
+date: '2025-08-29'
+tags: ['code-tool']
+draft: true
+summary: '面经'
+---
+
+# 分层模型
+网络问题很复杂，我们需要分层去解决不同的问题
+
+四层是早期软件公司的分层模型，七层是教科书中的（太细了）
+
+分层是为了相对独立，去解决一下问题，五层比较通用
+
+## 五层网络模型
+应用层：HTTP/HTTPS URL协议等
+传输层：TCP（可靠传输协议）/ UDP（不可靠传输协议）
+网络层：IP地址，路由（茫茫的网络中，寻找最优路径解）（IP：动态唯一，像家庭住址，MAC地址，像指纹）
+数据链路层：在局部的网络中，如何精准的发送到目的地址 MAC地址（打在网卡上）
+物理层：信号如何传播
+
+## URL（统一资源定位符）
+找到你想要的互联网中的服务
+
+由协议（schema）、域名、端口、path、query、hash（网络中没有作用）组成。
+
+www.baidu.com/ 最后面这个是根路径，如果没有写，浏览器会自动补全
+
+URL是URI的子集，一个请求资源的URL并不能说明该资源一定存在在域名主机中。URL只是后端程序生成结果的依据。
+
+把path和文件路径对应起来的程序，是静态资源服务器。（live-server插件）
+
+##  HTTP
+
+消息传递的模式：请求-响应模式
+
+在某一次请求的前提下，才可以区分客户端和服务器。
+
+```
+请求行
+请求头（可以有多行，键值对）
+
+请求体
+```
+
+请求样例
+
+```
+GET / HTTP/1.1
+Host: www.taobao.com
+```
+GET：只是用来表达语意的（可以随便写），服务器认识就有效。认不认识要问服务器人员
+/：表示路径 + query
+HTTP/1.1：固定的，表示协议版本
+
+Host：访问域名（这个请求头必须写，其他需要前后人员协商）
+Content-Type：告诉服务器请求体的格式 x/y(MIME) (application/x-www-form-urlencoded) (application/json)  (multipart/form-data; boundary=-aaa 这种格式主要用于文件上传)
+
+```
+POST /api/user/login HTTP/1.1
+Host: study.duyiedu.com
+Content-Type: multipart/form-data; boundary=aaa
+
+--aaa
+Content-Disposition: form-data; name="loginId"
+
+admin
+--aaa
+Content-Disposition: form-data; name="loginPwd"
+
+123456
+
+--aaa
+Content-Disposition: form-data; name="avatar"
+fileName="avatar.jpg"
+Content-type: img/jpeg
+
+文件的二进制数据(base64)
+--aaa--
+```
+
+响应
+
+```
+响应行
+响应头
+
+响应体
+```
+
+```
+HTTP/1.1 200 OK 后面这俩由程序控制
+Content-Type: text/html
+
+响应体
+```
+
+1开头：信息，需要请求者继续进行操作
+2开头：成功
+3开头：重定向、缓存（301永久重定向，下次直接访问新的，302临时重定向） 通过响应头Location来重定向，浏览器操作的
+4开头：客户端错误（40协议错误 请求协议错误，）
+5开头：服务器错误 
+
+# 用户代理
+浏览器称为用户代理，之所以被称为用户代理，是因为浏览器可以代替用户发请求和解析响应。
+
+## 什么时候浏览器代理发请求（必须要有完整的URL地址）
+1. 导航栏
+2. 点击<a/>元素。
+
+    假如当前页面的URL地址为：http://www.baidu.com:80/a/b/c.html
+
+    a元素的href属性有两种表示方式：绝对路径和相对路径
+
+    绝对路径：补全的URL和当前页面path完全没有关系。如果不全， 缺少协议就根据当前页面协议补全，缺少域名就根据当前页面域名补全，缺少端口就根据当前页面端口补全。
+    
+    两种写法： 
+            1. <a href="//www.taobao.com/">第一种：//www.taobao.com/</a> 会自动补全为 http://www.taobao.com/
+            2. <a href="/">第二种: /</a> 会自动补全为 http://www.baidu.com/
+
+    相对路径：相对的是当前页面的path路径
+
+    两种写法：
+
+    第一种：./index.html 会补全为 http://www.baidu.com:80/a/b/index.html
+
+    第二种：../index.html 会补全为 http://www.baidu.com:80/a/index.html
+
+3. 当用户点了表单的提交按钮（现代一般不这样做，但是可以利用回车登录） 填写form元素的action和method属性后，点击提交按钮会发出后请求。它请求体的格式默认为 application/x-www-form-urlencoded
+
+4. 当解析HTML时遇到了`<img>` `<link>` `<script` `<video>` `<audio>`等元素
+
+5. 用户点击刷新
+
+
+## 自动解析响应的能力
+
+1. 能够自动识别响应码，当出现一些特殊的响应码时，浏览器会自动完成处理。如：301，302
+2. 能根据响应结果`Content-Type`做不同处理
+
+
+# AJAX
+早期浏览器并没有把网络通信下放给JS
+
+浏览器发请求，如：form表单、a元素，都会刷新浏览器。但是JS并不会。
+
+JS发有两种方式（都叫AJAX）：
+1. xhr（老了）事件风格
+2. Fetch（还在维护更新，但是做不了进度）Promise风格。响应结果是分阶段的，分为响应行+响应头和响应体（可以解析成不同的格式） （ArrayBuffer：只读的空间连续的的定长字节数）
+
+```js
+const strs = ['fa','fs','ewq']
+
+const map = new Map()
+
+for(const str of strs){
+    map.set(str)
+}
+
+while(){
+    map.get()
+}
+```
+
