@@ -1,11 +1,15 @@
 'use client'
 
-import Image from 'next/image'
+import { useGSAP } from '@gsap/react'
+import { useRef } from 'react'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import SplitText from 'gsap/SplitText'
-import { useEffect } from 'react'
+import Image from 'next/image'
 import Header from '@/components/Header'
+
+// Register plugins
+gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const TAGS = [
   '痛仰乐队',
@@ -26,12 +30,11 @@ const DURATION = 15000
 const ROWS = 3
 const TAGS_PER_ROW = 6
 
-const random = (min, max) => Math.floor(Math.random() * (max - min)) + min
 const shuffle = (arr) => [...arr].sort()
 
 const InfiniteLoopSlider = ({ children, duration, reverse = false }) => {
   return (
-    <div className={`relative overflow-hidden`}>
+    <div className="relative overflow-hidden">
       <div
         className="animate-loop flex w-max"
         style={{
@@ -53,138 +56,111 @@ const Tag = ({ text }) => (
 )
 
 export default function Home() {
-  useEffect(() => {
-    // 动画部分
-    gsap.registerPlugin(ScrollTrigger)
-    gsap.registerPlugin(SplitText)
+  const boxRef = useRef<HTMLDivElement>(null)
+  const tl = useRef<GSAPTimeline>(gsap.timeline())
 
-    const tl = gsap.timeline()
+  useGSAP(
+    () => {
+      // Clear any existing ScrollTriggers
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
 
-    const split = new SplitText('#text', {
-      type: 'lines',
-      linesClass: 'line',
-    })
-
-    tl.to(split.lines, {
-      rotationX: -100,
-      transformOrigin: '50% 50% -60px',
-      opacity: 0,
-      ease: 'power3',
-      stagger: 0.25,
-    })
-      .to('#avatar4', {
-        scale: 0,
-        ease: 'power1.in',
-        delay: 0,
+      const split = new SplitText('#text', {
+        type: 'lines',
+        linesClass: 'line',
       })
-      .to(
-        '#avatar3',
-        {
-          scale: 0,
-          ease: 'power1.in',
-          delay: 0.1,
-        },
-        '<'
-      )
-      .to(
-        '#avatar2',
-        {
-          scale: 0,
-          ease: 'power1.in',
-          delay: 0.1,
-        },
-        '<'
-      )
-      .to(
-        '#avatar1',
-        {
-          scale: 0,
-          ease: 'power1.in',
-          delay: 0.1,
-        },
-        '<'
-      )
-      .from('.grid-item', {
-        opacity: 0,
-        y: 500,
-        ease: 'power3.in',
-        stagger: 0.1,
-      })
-      .from(
-        'header',
-        {
+
+      // Create new timeline
+      tl.current = gsap.timeline()
+
+      tl.current
+        .to(split.lines, {
+          rotationX: -100,
+          transformOrigin: '50% 50% -60px',
           opacity: 0,
-        },
-        '<'
-      )
+          ease: 'power3',
+          stagger: 0.25,
+        })
+        .to('#avatar4', {
+          scale: 0,
+          ease: 'power1.in',
+          delay: 0,
+        })
+        .to(
+          '#avatar3',
+          {
+            scale: 0,
+            ease: 'power1.in',
+            delay: 0.1,
+          },
+          '<'
+        )
+        .to(
+          '#avatar2',
+          {
+            scale: 0,
+            ease: 'power1.in',
+            delay: 0.1,
+          },
+          '<'
+        )
+        .to(
+          '#avatar1',
+          {
+            scale: 0,
+            ease: 'power1.in',
+            delay: 0.1,
+          },
+          '<'
+        )
+        .from('.grid-item', {
+          opacity: 0,
+          y: 500,
+          ease: 'power3.in',
+          stagger: 0.1,
+        })
+        .from(
+          '#header',
+          {
+            opacity: 0,
+          },
+          '<'
+        )
 
-    ScrollTrigger.create({
-      animation: tl,
-      trigger: '#second',
-      start: 'top top',
-      end: '+=100%',
-      markers: true,
-      pin: true,
-      scrub: 2,
-    })
-  }, [])
+      // Create ScrollTrigger
+      ScrollTrigger.create({
+        animation: tl.current,
+        trigger: boxRef.current,
+        start: 'top top',
+        end: '+=100%',
+        markers: true,
+        pin: true,
+        scrub: 1,
+      })
+
+      // Cleanup function
+      return () => {
+        ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+        tl.current.kill()
+      }
+    },
+    { scope: boxRef }
+  ) // Added scope for better cleanup
 
   return (
-    <div>
-      <div id="second" className="relative h-screen items-center justify-center bg-black">
-        <Image
-          id="avatar1"
-          src="/static/images/sparrowhawk-avatar.jpg"
-          alt="avatar"
-          className="absolute"
-          fill={true}
-          objectFit="cover"
-        />
-        <Image
-          id="avatar2"
-          src="/static/images/sparrowhawk-avatar.jpg"
-          alt="avatar"
-          fill={true}
-          objectFit="cover"
-          className="absolute"
-        />
-        <Image
-          id="avatar3"
-          src="/static/images/sparrowhawk-avatar.jpg"
-          alt="avatar"
-          fill={true}
-          objectFit="cover"
-          className="absolute"
-        />
-        <Image
-          id="avatar4"
-          src="/static/images/sparrowhawk-avatar.jpg"
-          alt="avatar"
-          fill={true}
-          objectFit="cover"
-          className="absolute"
-        />
+    <div ref={boxRef} className="relative h-screen">
+      <Header />
 
-        <p id="text" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <span className="text-2xl">一名软件开发工程师🧑‍💻</span>
-          <br />
-          这里会分享我的一些生活、技术总结、以及喜欢的影视剧
-          <br />
-          目前在自学吉他中～
-        </p>
-      </div>
-
-      <div id="grid" className="mx-auto max-w-5xl">
+      <div className="relative top-20 mx-auto max-w-5xl bg-pink-400">
         <div
           className="grid grid-cols-8 gap-3"
           style={{
             gridTemplateAreas: `"map map map map tall tall mbti mbti"
-                         "map map map map cat1 cat1 cat2 cat2"
-                         "taiyuan taiyuan taiyuan zhi  cat1 cat1 cat2 cat2"
-                         "daxue daxue yue yue yue yue li li"
-                         "apex apex yue yue yue yue la la"
-                         "jita cook cook . . . . ."
-                         `,
+                                   "map map map map cat1 cat1 cat2 cat2"
+                                   "taiyuan taiyuan taiyuan zhi  cat1 cat1 cat2 cat2"
+                                   "daxue daxue yue yue yue yue li li"
+                                   "apex apex yue yue yue yue la la"
+                                   "jita cook cook . . . . ."
+                                   `,
           }}
         >
           <div className="grid-item rounded-md bg-gray-900 p-2" style={{ gridArea: 'map' }}>
@@ -244,7 +220,7 @@ export default function Home() {
               width={150}
             />
             <p className="mt-4 text-center text-sm">
-              他叫虎砸 <br /> <span className="text-xs text-gray-400">（一只起司）</span>
+              虎砸 <br /> <span className="text-xs text-gray-400">（一只起司）</span>
             </p>
           </div>
           <div className="grid-item rounded-md bg-gray-900 p-3" style={{ gridArea: 'cat2' }}>
@@ -256,7 +232,7 @@ export default function Home() {
               width={150}
             />
             <p className="mt-4 text-center text-sm">
-              他叫大头 <br /> <span className="text-xs text-gray-400">（一只金点）</span>
+              大头 <br /> <span className="text-xs text-gray-400">（一只金点）</span>
             </p>
           </div>
           <div
@@ -355,6 +331,50 @@ export default function Home() {
             <p>喜欢吃辣</p>
           </div>
         </div>
+      </div>
+      <Image
+        id="avatar1"
+        src="/static/images/sparrowhawk-avatar.jpg"
+        alt="avatar"
+        className="absolute"
+        fill={true}
+        objectFit="cover"
+      />
+      <Image
+        id="avatar2"
+        src="/static/images/sparrowhawk-avatar.jpg"
+        alt="avatar"
+        fill={true}
+        objectFit="cover"
+        className="absolute"
+      />
+      <Image
+        id="avatar3"
+        src="/static/images/sparrowhawk-avatar.jpg"
+        alt="avatar"
+        fill={true}
+        objectFit="cover"
+        className="absolute"
+      />
+      <Image
+        id="avatar4"
+        src="/static/images/sparrowhawk-avatar.jpg"
+        alt="avatar"
+        fill={true}
+        objectFit="cover"
+        className="absolute"
+      />
+      <div className="desc absolute inset-0 flex h-screen items-center justify-center">
+        <p id="text" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <span className="text-2xl">一名软件开发工程师🧑‍💻</span>
+          <br />
+          这里会分享我的一些生活、技术总结、以及喜欢的影视剧
+          <br />
+          目前在自学吉他中～
+          <a href="/friends" className="text-2xl font-bold hover:underline">
+            I'm animated!
+          </a>
+        </p>
       </div>
     </div>
   )

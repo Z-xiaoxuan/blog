@@ -150,6 +150,7 @@ JS发有两种方式（都叫AJAX）：
 2. Fetch（还在维护更新，但是做不了进度）Promise风格。响应结果是分阶段的，分为响应行+响应头和响应体（可以解析成不同的格式） （ArrayBuffer：只读的空间连续的的定长字节数）
 
 ```js
+// 文件上传进度
 const strs = ['fa','fs','ewq']
 
 const map = new Map()
@@ -163,3 +164,50 @@ while(){
 }
 ```
 
+```js
+// gpt效果
+const content = "提问的问题"
+
+const resp = await  fetch('主机名',{
+    method:'POST',
+    headers:{
+        'Content-Type':'application/json'
+    }
+    body:JSON.stringify({
+        content
+    })
+})
+
+// const body = await resp.text() // 解析为纯文本
+
+//流式读取
+const reader = resp.body() // 拿到读取器
+const decoder = new TextDecoder()
+while(true){
+    const {value,done} = await reader
+    if(done){
+        break
+    }
+    console.log(decoder.decode(value))
+}
+
+// new EventSource
+```
+
+# 跨域
+
+受到浏览器的同源策略影响，从而产生了跨域的问题
+
+同源：协议、域名、端口都相同
+
+异源就会导致跨域的问题
+
+## 造成跨域情景
+*  网络通信
+    - a元素跳转、加载css、js、图片、视频等、AJAX等
+* JS api
+    - window.open window.parent、iframe
+* 存储
+    - webStorage、indexDB等
+    
+### AJAX跨域

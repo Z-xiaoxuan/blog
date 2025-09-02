@@ -8,7 +8,10 @@ import SearchButton from './SearchButton'
 
 const Header = () => {
   return (
-    <header className="fixed top-0 left-1/2 z-50 flex w-full -translate-x-1/2 justify-center bg-gradient-to-r from-transparent via-black/20 to-transparent px-5 py-2">
+    <header
+      id="header"
+      className="fixed top-0 left-1/2 z-50 flex w-full -translate-x-1/2 justify-center bg-gradient-to-r from-transparent via-black/20 to-transparent px-5 py-2"
+    >
       <div className="flex items-center space-x-4 leading-5 sm:-mr-6 sm:space-x-6">
         <div className="no-scrollbar hidden items-center gap-x-4 overflow-x-auto sm:flex md:max-w-72 lg:max-w-96">
           {headerNavLinks.map((link) => (
