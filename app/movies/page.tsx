@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Giscus from '@giscus/react'
 import { createMovies } from '../lib/actions'
 import { fetchMovieData } from '../lib/data'
-import { useSearchParams } from 'next/navigation'
+// import { useSearchParams } from 'next/navigation'
 import { Movie } from '../lib/type'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -15,9 +15,9 @@ gsap.registerPlugin(ScrollTrigger)
 export default function TimelineNav() {
   const [movies, setMovies] = useState<Movie[]>([])
 
-  const searchParams = useSearchParams()
+  // const searchParams = useSearchParams()
 
-  const add = searchParams.get('add')
+  // const add = searchParams.get('add')
 
   useEffect(() => {
     const res = fetchMovieData()
@@ -58,14 +58,14 @@ export default function TimelineNav() {
   return (
     <>
       <div id="container" className="h-screen overflow-auto">
-        <form action={createMovies} className={add === 'true' ? 'block' : 'hidden'}>
+        {/* <form action={createMovies} className={add === 'true' ? 'block' : 'hidden'}>
           <input id="name" type="text" name="name" placeholder="name" />
           <input id="url" type="text" name="url" placeholder="url" />
           <input id="description" type="text" name="description" placeholder="description" />
           <button type="submit" className="cursor-pointer border border-amber-300">
             Submit
           </button>
-        </form>
+        </form> */}
 
         <div className="mx-auto my-64 grid w-fit grid-cols-2 gap-x-4 gap-y-5">
           {movies.map((movie, index) => (

@@ -55,93 +55,86 @@ const Tag = ({ text }) => (
 )
 
 export default function Home() {
-  useGSAP(
-    () => {
-      // 动画部分
-      gsap.registerPlugin(ScrollTrigger)
-      gsap.registerPlugin(SplitText)
+  useGSAP(() => {
+    // 动画部分
+    gsap.registerPlugin(ScrollTrigger)
+    gsap.registerPlugin(SplitText)
 
-      const tl = gsap.timeline()
+    const tl = gsap.timeline()
 
-      const split = new SplitText('#text', {
-        type: 'lines',
-        linesClass: 'line',
+    const split = new SplitText('#text', {
+      type: 'lines',
+      linesClass: 'line',
+    })
+
+    tl.to(split.lines, {
+      rotationX: -100,
+      transformOrigin: '50% 50% -60px',
+      opacity: 0,
+      ease: 'power3',
+      stagger: 0.25,
+    })
+      .to('#avatar4', {
+        scale: 0,
+        ease: 'power1.in',
+        delay: 0,
       })
-
-      tl.to(split.lines, {
-        rotationX: -100,
-        transformOrigin: '50% 50% -60px',
-        opacity: 0,
-        ease: 'power3',
-        stagger: 0.25,
-      })
-        .to('#avatar4', {
+      .to(
+        '#avatar3',
+        {
           scale: 0,
           ease: 'power1.in',
-          delay: 0,
-        })
-        .to(
-          '#avatar3',
-          {
-            scale: 0,
-            ease: 'power1.in',
-            delay: 0.1,
-          },
-          '<'
-        )
-        .to(
-          '#avatar2',
-          {
-            scale: 0,
-            ease: 'power1.in',
-            delay: 0.1,
-          },
-          '<'
-        )
-        .to(
-          '#avatar1',
-          {
-            scale: 0,
-            ease: 'power1.in',
-            delay: 0.1,
-          },
-          '<'
-        )
-        .from('.grid-item', {
-          opacity: 0,
-          y: 500,
-          ease: 'power3.in',
-          stagger: 0.1,
-        })
-        .from(
-          'header',
-          {
-            opacity: 0,
-          },
-          '<'
-        )
-
-      ScrollTrigger.create({
-        animation: tl,
-        trigger: '#second',
-        start: 'top top',
-        end: '+=100%',
-        markers: true,
-        pin: true,
-        scrub: 2,
-        once: true,
+          delay: 0.1,
+        },
+        '<'
+      )
+      .to(
+        '#avatar2',
+        {
+          scale: 0,
+          ease: 'power1.in',
+          delay: 0.1,
+        },
+        '<'
+      )
+      .to(
+        '#avatar1',
+        {
+          scale: 0,
+          ease: 'power1.in',
+          delay: 0.1,
+        },
+        '<'
+      )
+      .from('.grid-item', {
+        opacity: 0,
+        y: 500,
+        ease: 'power3.in',
+        stagger: 0.1,
       })
-    },
-    { scope: container }
-  )
+      .from(
+        'header',
+        {
+          opacity: 0,
+        },
+        '<'
+      )
+
+    ScrollTrigger.create({
+      animation: tl,
+      trigger: '#second',
+      start: 'top top',
+      end: '+=100%',
+      markers: true,
+      pin: true,
+      scrub: 2,
+      once: true,
+    })
+  })
 
   return (
     <div>
-      <div
-        ref={container}
-        id="second"
-        className="relative h-screen items-center justify-center bg-black"
-      >
+      <div id="second" className="relative h-screen items-center justify-center bg-black">
         <Image
           id="avatar1"
           src="/static/images/sparrowhawk-avatar.jpg"

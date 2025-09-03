@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import React, { useState } from 'react'
 
 const InteractiveImage = ({ src, alt }) => {
@@ -11,7 +13,7 @@ const InteractiveImage = ({ src, alt }) => {
 
   return (
     <div className="p-4">
-      <img className="mx-auto w-1/2" src={src} alt={alt} style={filterStyle} />
+      <Image className="mx-auto w-1/2" src={src} alt={alt} style={filterStyle} />
 
       <div className="mt-4">
         <div className="flex justify-between">

@@ -96,6 +96,40 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
+        <div className="hidden">
+          <svg className="hidden">
+            <filter id="x" height="500%">
+              <feTurbulence baseFrequency="0.01 0.02" numOctaves="2" result="t0"></feTurbulence>
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="t0"
+                result="d0"
+                scale="4"
+              ></feDisplacementMap>
+              <feComposite in="SourceGraphic" in2="d0" operator="atop" result="0"></feComposite>
+              <feTurbulence baseFrequency="1" numOctaves="2" result="t1"></feTurbulence>
+              <feDisplacementMap in="0" in2="t1" result="d1" scale="1"></feDisplacementMap>
+              <feComposite in="0" in2="d1" operator="atop" result="1"></feComposite>
+              <feOffset dx="-3" dy="-3" in="1"></feOffset>
+            </filter>
+          </svg>
+          <svg className="hidden">
+            <filter id="xs">
+              <feTurbulence baseFrequency="0.01 0.02" numOctaves="2" result="t0"></feTurbulence>
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="t0"
+                result="d0"
+                scale="4"
+              ></feDisplacementMap>
+              <feComposite in="SourceGraphic" in2="d0" operator="atop" result="0"></feComposite>
+              <feTurbulence baseFrequency="1" numOctaves="2" result="t1"></feTurbulence>
+              <feDisplacementMap in="0" in2="t1" result="d1" scale="1"></feDisplacementMap>
+              <feComposite in="0" in2="d1" operator="atop" result="1"></feComposite>
+              <feOffset dx="-3" dy="-3" in="1"></feOffset>
+            </filter>
+          </svg>
+        </div>
         <ThemeProviders>
           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
           {/* <SectionContainer> */}

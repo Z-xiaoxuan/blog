@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 
 interface MDXFilterBackdropProps {
   imageSrc: string
@@ -81,7 +82,7 @@ export default function MDXFilterBackdrop({
     <div className={`backdrop-filter-demo ${className}`}>
       <div style={containerStyle}>
         <div className="relative">
-          <img src={imageSrc} alt={alt} style={imageStyle} />
+          <Image src={imageSrc} alt={alt} style={imageStyle} />
           <div style={backdropStyle}>你好~</div>
         </div>
 

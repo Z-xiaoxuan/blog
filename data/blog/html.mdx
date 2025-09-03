@@ -1,0 +1,30 @@
+---
+title: HTML
+date: '2025-9-3'
+tags: ['HTML']
+draft: false
+summary: 'HTML面筋'
+authors: ['sparrowhawk']
+---
+
+# 文档声明
+
+HTML文件顶部的声明，是为了帮助浏览器如何解析和显示HTML文档类型
+
+```html
+<!DOCTYPE html>
+```
+
+他并非一个标签，而是一条“信息”。因为有不同版本的HTML，他们支持的标签不同，所以需要这条“信息”来帮助浏览器解析和显示HTML文档类型。（不同版本有不同版本的写法）
+
+H5的声明和其他版本不同，H5不需要DTD文件，而其他因为是基于SGML，所以需要DTD文件。
+
+**DTD是什么？**
+
+DTD（Document Type Definition）文档类型定义，是HTML文档的规范，定义了HTML文档的结构和语义。
+
+**SGML是什么？**
+
+SGML（Standard Generalized Markup Language）标准通用标记语言，是HTML的前身，是HTML的父语言。
+
+浏览器的渲染模式：

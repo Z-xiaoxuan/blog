@@ -211,3 +211,86 @@ while(true){
     - webStorage、indexDB等
     
 ### AJAX跨域
+三种解决办法：CORS、JsonP、代理
+#### CORS
+CORS规则就是浏览器校验规则：
+1. 服务器明显表示可以就可以通过，如果没有明确表示就不行
+
+请求分类：CORS将请求分为两类：**简单请求**和**预检请求**
+
+简单请求的定义：
+1. 请求方法是`GET`、`POST`、`HEAD`之一
+2. 头部字段（请求头）满足CORS安全规范（开发者不要动就不会打破）
+3. Content-Type 只能是 `application/x-www-form-urlencoded`、`multipart/form-data`、`text/plain`
+
+其余的都是预检请求
+
+#### 对简单请求的检验规则
+
+客户端会在请求头携带一个受保护字段，`Origin` 来表示请求的来源（代码不可更改）。
+
+服务器返回的响应头中，会携带`Access-Control-Allow-Origin`字段来表示允许的来源（代码可更改）。如果键中有 `Origin` 的值，就表示允许跨域。也可以写 `*` 表示允许所有来源。
+
+#### 对预检请求的检验规则
+
+1. 浏览器拦截请求，自己发一个请求，携带以下信息：
+    - Origin: http://my.com
+    - Access-Control-Request-Method: POST
+    - Access-Control-Request-Headers: 这里添更改了的请求头的key值
+
+2. 如果服务器希望通过，那么响应头中至少会携带：去告诉浏览器那些可以
+    - Access-Control-Allow-Origin: http://my.com
+    - Access-Control-Allow-Methods: POST
+    - Access-Control-Allow-Headers: 这里添更改了的请求头的key值
+    - Access-Control-Max-Age: 86400 这个字段是表示在这段时间内不用再预检了
+
+通过之后就是简单请求了
+
+#### 细节1
+跨域请求是不会携带cookie的，可以通过相关配置实现
+```js
+// xhr
+var xhr = new XMLHttpRequest()
+xhr.withCredentials = true
+
+// fetch
+fetch(url,{
+    credentials:'include'
+})
+```
+
+同时服务器也要通知浏览器：
+```js
+Access-Control-Allow-Credentials: true
+```
+
+**对于附带身份凭证的请求，服务器不能将`Access-Control-Allow-Origin`设置为`*`**
+
+#### 细节2
+跨域获取响应头，需要服务器在响应时，暴露哪些头部
+```js
+Access-Control-Expose-Headers: 可以暴露的响应头的key值
+```
+
+#### JsonP
+JsonP是通过`<script>`标签来实现的，
+
+客户端准备一个全局函数
+
+```js
+function callback(resp){
+    console.log("来自服务器的响应==>",resp)
+}
+<script src="跨域的请求源"></script>
+```
+
+服务器要返回一段js代码，是对客户端全局函数的调用
+```js
+callback({
+    msg:'客户端想要的信息'
+})
+```
+> 两边的函数名一定要统一
+
+#### 代理
+代理是通过服务器来实现的
