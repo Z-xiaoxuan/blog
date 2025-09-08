@@ -28,3 +28,70 @@ DTD（Document Type Definition）文档类型定义，是HTML文档的规范，�
 SGML（Standard Generalized Markup Language）标准通用标记语言，是HTML的前身，是HTML的父语言。
 
 浏览器的渲染模式：
+* 标准模式
+* 怪癖模式
+* 接近标准模式
+
+盒模型的差异：
+- 标准模式下，box-sizing: content-box
+- 怪癖模式下，box-sizing: border-box
+
+# 语义化
+
+> 说说你对语义化的理解
+
+**为什么需要语义化？**
+- html结构清晰
+- 语义化有助于SEO
+- 语义化有助于可访问性，方便其他设备解析：如屏幕阅读器、盲人阅读器
+
+**常用的语义化标签有哪些？**
+
+
+`<header>`：定义页面主要内容，独一无二
+
+`<nav>`：定义导航链接
+
+`<main>`：定义页面主要内容，独一无二
+
+`<section>`：定义文档中的节
+
+`<article>`：定义独立的内容
+
+`<aside>`：定义页面内容之外的内容
+
+`<footer>`：定义页面脚注
+
+**无障碍网页？**
+
+有利于残障人士使用，如盲人阅读器
+
+# SEO 
+> 请描述一下SEO中的TDK？
+
+TDK是Title Description Keyword的缩写，是SEO中的一个重要概念。
+
+**如何优化SEO？**
+
+内部优化：
+
+1. 合理的title，description，keyword
+2. 语义化的HTML结构，符合W3C规范
+3. 非装饰性图片添加 alt 属性
+4. display: none 谨慎使用
+5. 重要的HTML结构放在最前面
+6. 少用 iframe ，搜索引擎不会解析iframe中的内容
+
+外部优化：
+
+放友情链接和外链
+
+# [微格式](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Guides/Microformats)
+
+# 替换元素
+
+所谓可替换元素，就是外观不由CSS控制的元素。比如：`iframe` `img` 音视频标签
+
+# 页面可见性
+
+判断页面是否在当前标签页
