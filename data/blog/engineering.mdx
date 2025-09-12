@@ -6,12 +6,85 @@ draft: false
 summary: '前端工程、css工具链、js工具链'
 ---
 
-## 前言
+# CommonJS 和 ES Module
 
-认识一个庞大陌生的事物，我们可以先将它分类逐个击破，之后再可以聚合使用。就像函数那样
+## CommonJS
 
-# 模块化
+CommonJS：社区标准。是在JS运行时执行的，同时它的执行也是同步的。
 
--  CommonJS：社区标准。运行时。
--  ES6 Module：ECMAScript 标准。编译时（也可以运行时加载：用 `import()`）。更推荐这个，因为编译时，方便优化。
+```JS
+// require 伪代码
+function require(path){
+    // 判断路径对应的模块是否有缓存
+    if(cache[path]){
+        return cache[path]
+    }
 
+    // 通过函数作用域防止变量污染
+    function _run(exports,require, module,_filename,_dirname){
+        // 这里放的是路径对应的模块的代码
+        // 第一个参数：模块内要导出的值
+        // 第二个参数：require函数本身，模块也可以用其他模块
+        // 第三个参数：module，下面的变量module
+        // 第四个参数：模块路径
+        // 第五个参数：模块所在目录
+    }
+
+    const module = {
+        exports: {}
+    }
+
+    _run().call(
+        module.exports,
+        module.exports,
+        require,
+        module,
+        模块路径,
+        模块所在目录
+    )
+
+    return module.exports
+}
+```
+
+**模块函数的 `this` `module.exports` `exports` 都是一个东西**
+
+## ES Module
+
+同时支持`静态依赖`和`动态依赖`
+
+```js
+// 静态
+import a from './a' // 文件顶部
+
+// 动态 相比于require的同步加载，ESM是异步加载
+import('./a').then() // vue-router 的路由懒加载
+```
+
+ES6 Module：ECMAScript 标准。编译时（也可以运行时加载：用 `import()`）。更推荐这个，因为编译时，方便优化。
+
+**⚠️注意**
+
+```js
+import {const,increase} from './a'
+
+// 上述一个是基本类型，一个是函数
+
+// 它们都是对模块内地址的传递
+```
+
+# npx
+
+两个作用：运行本地（当前项目下的node_modules）的包、临时运行命令
+
+# ESLint
+
+ESLint：代码检查工具
+
+1. 将包安装在本地包管理器
+2. 项目根目录书写配置文件和规则
+3. 执行命令去执行校验
+
+更加方便的方法：安装ESLint插件，它会根据项目根目录中的ESLint配置文件在书写代码的时候就开始提示错误
+
+可以继承 airbnb 的配置
