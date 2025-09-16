@@ -1,0 +1,33 @@
+---
+title: 'Promise'
+date: '2025-06-25'
+tags: ['code-tool']
+draft: true
+summary: 'Promise'
+---
+
+1. 构造器中的代码是同步执行的，就算先执行了状态的改变（只能改变一次），后续的代码也要执行完
+
+2. 同一个Promise可以被多次 `.then()`
+
+3. `.then` `.catch` 期望传入的值是函数，如果不是函数，值会被透传
+
+```js
+function myAll(args){
+    return new Promise((resolve,reject)=>{
+        const result = []
+        
+
+
+    })
+}
+```
+
+`.then`和`.catch`链式调用后都会返回一个全新的`promise`。全新的promise的状态根据以下情况来判断:
+- 如果没有针对上一个结果做出相应的处理，新的promise的状态和上一个promise的状态保持一致。（resolve -> catch\reject -> then）
+- 如果针对上一个做出了相应的处理，但上一个还没结果，新的promise的状态为`Pending`
+- 如果针对上一个做出了相应的处理，同时上一个结果也出来了
+    - 相应处理过程没有出错，新的promise成功，返回值为相应处理的返回值
+    - 相应处理过程出错，新的promise失败，返回值为相应处理的错误
+    - 相应处理过程中**又返回了一个promise**，那么新的promise状态和这个返回的promise状态保持一致
+
