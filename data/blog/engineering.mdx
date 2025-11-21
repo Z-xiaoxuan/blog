@@ -88,3 +88,85 @@ ESLint：代码检查工具
 更加方便的方法：安装ESLint插件，它会根据项目根目录中的ESLint配置文件在书写代码的时候就开始提示错误
 
 可以继承 airbnb 的配置
+
+浏览器已经有模块化，为什么还需要工程化？
+
+> 因为浏览器在用到模块文件后，都会去请求一次。项目工程大了以后，需要请求很多的JS文件，浪费请求资源，更多的请求降低了页面的访问效率；同时也不支持CommonJS模块化（有的第三方模块是用这个来实现的）
+
+# webpack编译过程
+
+初始化 -> 编译 ->
+
+初始化：根据命令、配置文件、默认配置生成最终的默认配置
+
+
+# vite对静态资源的打包
+
+vite在打包时对静态文件的处理方式只有在以下情况下：
+
+1. 标签静态链接路径
+2. css静态链接路径
+3. 动态导入
+
+场景： 在js处理一些图片路径的时候，我会先静态import图片，拿到图片后通过JS做编辑，这样的坏处就是图片多需要一直导入。 
+
+# 如何清理源码中没有被应用的代码JS、TS、CSS
+
+1. ESLink、Terser 单文件检测  针对JS
+2. Tree Shaking 整个项目的检测  针对JS
+3. PurgeCSS 发现未被应用的类
+4. 自定义 
+
+# webpack打包结果分析
+
+```js
+(function(modules){
+
+    function require(moduleId){
+        const func = modules[moduleId]
+        const module  = {
+            export:{}
+        }
+        func(module,module.export,require)
+
+        // 模块执行结果
+        const result = module.export
+        return result
+    }
+    require('./src/a.js')
+})({
+    //该对象保存所有模块的代码
+    "./src/a.js": function(module,export,require){
+        console.log('module a')
+        module.exports = 'a'
+    },
+    "./src/index.js": function(module,export,require){
+        console.log('index module')
+        var a = require('./src/a.js')
+        console.log(a)
+    } 
+})
+```
+
+# 定位错误
+
+source map 源码地图
+
+# 编译过程
+可以分为以下三个步骤：初始化、编译、输出
+
+## 初始化
+将**CLI参数、配置文件、默认配置**进行融合，形成一个最终的配置对象
+
+## 编译
+
+最重要的是得到**模块列表**
+
+1. 创建chunk，他表示通过某个入口查找的所有依赖的统称
+2. 构建依赖模块也就是模块列表，构建方式：每次先检查模块列表中是否有，没有的话需要通过AST分析，从而 拿到该模块的依赖模块数组，require替换为webpack_require（文件本身是没有被替换的，在内存中完成）。完成代码替换后，放入到模块列表中。之后再去依赖模块的数组挨个去递归完成上述操作。
+3. 产生chunk assets，生成文件名和对应的文件内容
+4. 将所有的 chunk assets合并，并进行哈希
+
+## 输出
+
+分别将每一个chunk，写入到文件中

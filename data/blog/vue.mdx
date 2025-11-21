@@ -1,0 +1,319 @@
+---
+title: 'Vue'
+date: '2025-11-17'
+tags: ['code-tool']
+draft: true
+summary: 'Vue'
+---
+
+# 实现响应式系统
+
+数组代理对象的问题
+
+1. 数组在被代理后，由于深度递归响应式代理，如果其中包含一个对象数据类型。访问代理后的数组，这个对象也是被代理过的。如果用原对象去找就会和这个代理对象去比较，从而出现问题
+```js
+// 问题复现
+const obj = {
+    a:1,
+    b:2
+}
+
+const proxyArr = reactive([1,obj,20])
+
+proxyArr.includes(obj) // 打印结果会为false
+```
+
+解决方案：
+
+重写数组的一些读取方法，先正常找，找不到再从原始数据中找
+
+
+2. 数组长度的隐式变化无法触发派发更新
+
+## EFFECT
+
+effect方法就是为了将**函数**和**数据**关联起来
+
+effect函数思想：
+
+```JS
+const obj = {
+    a: 1,
+    b: 2
+}
+
+const proxyObj = new Proxy(obj)
+
+effect(() => {
+    console.log(proxyObj.a)
+})
+
+proxyObj.a = 2
+```
+
+effect传入的回调函数，期望和其中使用到的代理对象建立连接，当代理对象发生改变时，此回调函数需要重新运行。
+
+具体实现:
+```js
+
+let activeEffect = null // 用来存放当前需要收集的函数
+const depsMap = new Map()
+
+// 依赖收集
+function track(target,key){
+    if(activeEffect){
+        const deps = depsMap.get(key)
+        if(!deps){
+            deps = new Set()
+            depsMap.set(key,deps)
+        }
+        deps.add(activeEffect)
+    }
+}
+
+// 派发更新
+function trigger(target,key){
+    const deps = depsMap.get(key)
+    if(deps){
+        deps.forEach(effect => effect());
+    }
+}
+
+const data = {
+    a: 1,
+    b: 2,
+    c: 3
+}
+
+const state = new Proxy(data,{
+    get(target,key){
+        track(target,key)
+        return target[key]
+    },
+    set(target,key,value){
+        target[key] = value
+        trigger(target,key)
+        return true
+    }
+})
+
+function effect(fn){
+    activeEffect = fn
+    fn()
+    activeEffect = null
+}
+
+effect(() => {
+    console.log(state.a)
+})
+
+```
+
+以上实现的第一版有一个问题： 以下代码执行收集只执行了一次，因为收集逻辑是靠`activeEffect`为真来触发的。
+
+```js
+effect(() => {
+    if(state.a === 1){
+        console.log(state.b)
+    }else{
+        console.log(state.c)
+    }
+})
+
+state.a = 10
+```
+
+第一版解决方式:
+```JS
+function effect(fn){
+    const environment = () => {
+        activeEffect = environment
+        fn()
+        activeEffect = null
+    }                                                                         
+}
+```
+
+现在还有另外一个问题就是：上一次收集的依赖，在下一次还会有。没有清除上一次的依赖。
+理论上第一次收集的是`a`和`b`,第二次收集的是`a`和`c`
+但是第二次是`a`、`b`和`c`。所以说需要清除之前的依赖
+
+第二版解决方式
+```js
+function track(target,key){
+    if(activeEffect){
+        const deps = depsMap.get(key)
+        if(!deps){
+            deps = new Set()
+            depsMap.set(key,deps)
+        }
+        deps.add(activeEffect)
+        activeEffect.deps.push(deps)
+    }
+}
+
+function effect(fn){
+    const environment = () => {
+        activeEffect = environment
+        cleanup(environment)
+        fn()
+        activeEffect = null
+    }
+    
+    environment.deps = []
+}
+
+function cleanup(env){
+    const deps = env.deps
+    if(deps.length){
+        deps.foreach((set) => {
+            set.delete(env)
+        })
+    }
+}
+```
+
+紧接着问题又出现了：会有死循环的表现（没有弄清楚）
+待解决...
+
+最后一个问题：effect的嵌套问题,c会收集不到。问题就是 `activeEffect = null`的执行栈出问题。
+```JS 
+effect(() => {
+    effect(() => {
+        state.b
+        effect(() => {
+            state.a
+        })
+    })
+    state.c
+})
+```
+我们可以模拟一个执行栈
+```JS
+const activeEffectStack = []
+function effect(fn){
+    const environment = () => {
+        activeEffect = environment
+        activeEffectStack.push(environment)
+        cleanup(environment)
+        fn()
+        // activeEffect = null
+        activeEffectStack.pop()
+        activeEffect = activeEffectStack[activeEffectStack.length - 1]
+    }
+    
+    environment.deps = []
+}
+```
+
+# setup
+
+是最早的一个生命周期钩子
+
+早期的vue是选项式API
+
+vue3多更新了组合式API的风格，但是还是会有一些重复的体力活代码，需要每次把数据返回出去
+
+于是最后更新为了setup语法糖的模式
+
+# v-module
+
+两种应用的场景：
+1. 表单元素和响应式数据的双相绑定
+2. 父子组件传递数据 
+
+# computed
+
+
+开发者的两种使用方法
+```JS
+// 第一种
+const state = reactive({
+    a: 1,
+    b: 2
+})
+const sum = computed(() => {
+    return state.a  + state.b
+})
+
+// 第二种
+const firstName = ref('Join')
+const firstName = ref('Xj')
+const fullName = computed({
+    get(){
+        return firstName.value + lastName.value
+    },
+    set(newValue){
+        [firstName.value,lastName.value] = newValue.split(' ')
+    }
+})
+```
+
+谈谈computed的机制，缓存了什么？为什么不支持异步？
+
+缓存的是上一次getter计算出来的值
+
+computed设计的初衷是用于计算并缓存一个基于响应式依赖的同步计算结果
+
+实现原理：
+
+```js
+
+// 由于它可以传递函数或者方法，需要参数归一化
+// 第二点：底层不是用的reactive或者ref，所以需要手动的去收集依赖和派发更行
+function paramsNormal(param){
+    let getter = null
+    let setter = null
+    if(typeof param === 'function'){
+        getter = param
+        setter = () => {
+            console.log('setter')
+        }
+    }else{
+        getter = param.getter
+        setter = param.setter
+    }
+    return {
+        getter,
+        setter
+    }
+}
+
+function computed(param){
+    const {getter,setter} = paramsNormal(param)
+
+    let dirty = true //是否为脏值
+    let value
+    
+    // 建立依赖关系
+    const fn = effect(getter,{
+        lazy: true
+    },
+    scheduler(){
+        dirty = true
+        trigger() // 派发更新
+    })
+
+    const obj = {
+        get value(){
+            track() // 收集依赖
+            if(dirty){
+                value = fn()
+                dirty = false
+            }
+            return value
+        },
+        set value(newValue){
+ 
+            setter(newValue)
+        }
+    }
+    return obj
+}
+
+const fullName = computed(() => {
+    return firstName.value + lastName.value
+})
+```
+
+# watch

@@ -15,3 +15,57 @@ authors: ['sparrowhawk']
 
 相对长度单位：em(相对于父元素字体大小)、rem(相对于根元素字体大小)、%、vh等
 
+# 标准盒子模型和怪异盒子模型
+
+在标准模式下，一个块的总宽度= width（content） + margin(左右) + padding(左右) + border(左右)
+在怪异模式下，一个块的总宽度= width + margin(左右)（即width已经包含了padding和border值）
+
+# 居中方式总结
+
+## 水平方向居中
+
+1. margin: 0 authors
+2. flex 设置一个弹性盒子，justify-content: center
+
+## 垂直方向居中
+
+1. vertical-align: middle 生效的前提是`display: inline-block`,且需要一个兄弟元素（可以用为元素before）做参考，让他垂直与兄弟元素的中心点。
+2. relative 和 absolute transform/margin负值
+3. 弹性盒子 align-items: center
+
+# 元素的尺寸
+
+1. dom.style.width： 获取的是你css编写的值(DOM树中的属性)
+2. getComputedStyle(dom).width CSSOM树（计算后的值）
+3. dom.clientWidth dom.scrollHeight (布局的值)会触发回流
+4. dom.getBoundingClientRect().width 获取的是最终呈现在用户眼前的值（是变换后的值）
+
+# 最重要的两点：计算属性、格式化上下文
+
+# BFC 块级格式化上下文
+
+会创建一个独立的布局环境，BFC内部的布局不会影响外部的布局
+
+布局规则：
+
+1. 内部的Box会在垂直方向一个接一个放
+2. BFC 可以解决父子元素之间的 margin 塌陷，但相邻兄弟元素之间的 margin 塌陷仍然可能存在。
+3. 每个盒子的左外边框都会紧挨着包含快的左边框（即使是浮动元素也如此）
+4. BFC的区域不会与浮动Box重叠
+5. BFC是独立的一个容器，不会影响外面元素的布局，反之亦然
+6. 计算BFC的高度时，浮动子元素也参与计算
+
+标准流中的Body就是一个天然的BFC
+
+触发BFC的常见的方式：
+
+1. float 浮动元素
+2. absolute/fixed
+3. overflow: auto scroll hidden
+4. display: inline-block
+
+BFC有什么用呢？
+
+1. 如果父元素是靠子元素撑开高度的，而子元素脱离了文档流，父元素会塌陷。解决方法就是父元素让他触发BFC。比如：overflow:hidden
+2. 两个相邻的元素，其中一个浮动，会遮盖到另一个，如何不会让另一个遮盖呢？另一个也触发BFC（可以用作左右两栏的布局）
+3. 上下两个相邻的元素，会有margin高度塌陷的问题，如何解决？给其中一个包裹一层box，触发这个盒子的BFC

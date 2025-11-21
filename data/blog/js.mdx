@@ -20,10 +20,39 @@ var在同一作用域中可多次声明，后面会覆盖到前面的
 
 let在声明之前有暂时性死区，就是没有声明之前不能用。
 
+```js
+const a = 1
+function b() {
+  console.log(a)
+  const a = 2
+}
+b()
+```
+
+```js
+// 作用域
+var a = 1
+
+function add() {
+  a++
+}
+
+function foo() {
+  var a = 2
+  add()
+  console.log(a)
+}
+
+foo()
+console.log(a)
+```
+
 # 数据类型
+
 两个大类：基本类型、引用类型
 
 基本类型：具体值存储在内存栈区
+
 - undefined：表示简单值的‘无’。转为数字是NaN。调用函数没有提供要求的参数就是undefined，函数默认返回undefined。
 - null：打印出来是Object，是一个语言bug，讲的就是表示对象的’无‘。转为数字是0
 - boolean
@@ -33,11 +62,12 @@ let在声明之前有暂时性死区，就是没有声明之前不能用。
 - bigint
 
 引用类型：具体值存储在内存堆，要想使用具体值，要把指向该堆的地址放到栈中。
+
 - object
 
 **对于函数参数传递引用类型的值，传递的是引用地址的复制值，如果继续引用该地值，外面的对象也会被修改，如果更换了新的对象，意味着更换了新的地址值，之后再修改对象将不会影响到外面的对象**
 
-#  包装类型
+# 包装类型
 
 当我们对基本数数据类型调用方法时，内部会自动创建一个临时的包装对象，然后调用方法，最后销毁临时对象
 
@@ -46,45 +76,91 @@ let在声明之前有暂时性死区，就是没有声明之前不能用。
 **强制转换**
 
 `Number()`
+
 - 基础数据类型
-    * undefined -> NaN
-    * null -> 0
-    * boolean -> 1/0
-    * string -> 纯数字字符串转数字，空字符串是0，其他字符串转NaN，
-     
+  - undefined -> NaN
+  - null -> 0
+  - boolean -> 1/0
+  - string -> 纯数字字符串转数字，空字符串是0，其他字符串转NaN，
 - 引用数据类型
-    1. 调用valueOf()，如果得到简单值调用Number(),否则第2步
-    2. 接着调用toString()，如果得到简单值调用Number(),否则第3步
-    3. 如果还是对象就报错
+  1. 调用valueOf()，如果得到简单值调用Number(),否则第2步
+  2. 接着调用toString()，如果得到简单值调用Number(),否则第3步
+  3. 如果还是对象就报错
 
 `String()`
+
 - 基础数据类型
-    * undefined -> 'undefined'
-    * null -> 'null'
-    * boolean -> 'true'/'false'
-    * number -> 转换为字符串
-    * string -> 本身
+
+  - undefined -> 'undefined'
+  - null -> 'null'
+  - boolean -> 'true'/'false'
+  - number -> 转换为字符串
+  - string -> 本身
 
 - 引用数据类型
-    1. 调用toString()，如果得到简单值调用String(),否则第2步
-    2. 调用valueOf()，，如果得到简单值调用String(),否则第3步
-    3. 如果还是对象就报错
+  1. 调用toString()，如果得到简单值调用String(),否则第2步
+  2. 调用valueOf()，，如果得到简单值调用String(),否则第3步
+  3. 如果还是对象就报错
 
 `Boolean()`
+
 - 基础数据类型
-    * undefined -> false
-    * null -> false
-    * boolean -> 本身
-    * number -> 0/NaN -> false，其他 -> true
-    * string -> '' -> false，其他 -> true
-    * symbol -> true
-    * bigint -> 0n -> false，其他 -> true
+
+  - undefined -> false
+  - null -> false
+  - boolean -> 本身
+  - number -> 0/NaN -> false，其他 -> true
+  - string -> '' -> false，其他 -> true
+  - symbol -> true
+  - bigint -> 0n -> false，其他 -> true
 
 - 引用数据类型
-    1. true
+  1. true
 
 **自动转换**
 
-
-
 # call
+
+# this的指向
+
+1. 直接调用，指向全局对象（window/global）
+2. new 指向该实例
+3. 通过对象调用，指向该对象
+4. call、apply、bind 目标对象
+5. 箭头函数的this,是声明时的上下文
+
+````js
+const a = {
+  name: 'duyi',
+  say: () => {
+    console.log(this.name)
+  },
+}
+a.say()
+```
+````
+
+
+# ++
+
+在前：先自增一，然后算出表达式的结果
+在后：先算出表达式的结果，再自增一
+
+```js
+/**
+ * 1. 对象的属性的类别只有两种：字符串、Symbol
+ * 2. 对象的属性的排序方式，数字字符在前 ，其他按照添加顺序
+*/
+const obj = {
+  a: 0,
+}
+
+obj['1'] = 0
+obj[++obj.a] = obj.a++
+const value = Object.values(obj)
+obj[value[1]] = obj.a
+
+console.log(obj)
+
+
+```

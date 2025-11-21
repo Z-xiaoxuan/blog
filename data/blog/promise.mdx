@@ -13,21 +13,69 @@ summary: 'Promise'
 3. `.then` `.catch` 期望传入的值是函数，如果不是函数，值会被透传
 
 ```js
-function myAll(args){
-    return new Promise((resolve,reject)=>{
-        const result = []
-        
-
-
-    })
+function myAll(args) {
+  return new Promise((resolve, reject) => {
+    const result = []
+  })
 }
 ```
 
 `.then`和`.catch`链式调用后都会返回一个全新的`promise`。全新的promise的状态根据以下情况来判断:
+
 - 如果没有针对上一个结果做出相应的处理，新的promise的状态和上一个promise的状态保持一致。（resolve -> catch\reject -> then）
 - 如果针对上一个做出了相应的处理，但上一个还没结果，新的promise的状态为`Pending`
 - 如果针对上一个做出了相应的处理，同时上一个结果也出来了
-    - 相应处理过程没有出错，新的promise成功，返回值为相应处理的返回值
-    - 相应处理过程出错，新的promise失败，返回值为相应处理的错误
-    - 相应处理过程中**又返回了一个promise**，那么新的promise状态和这个返回的promise状态保持一致
+  - 相应处理过程没有出错，新的promise成功，返回值为相应处理的返回值
+  - 相应处理过程出错，新的promise失败，返回值为相应处理的错误
+  - 相应处理过程中**又返回了一个promise**，那么新的promise状态和这个返回的promise状态保持一致
 
+```js
+const p1 = Promise.resolve(1)
+const p2 = new Promise((res) => res(p1)) // p2的状态为Pending
+```
+
+```js
+new Promise((res) => {
+  res(2)
+  new Promise((res) => res(5)).then(console.log)
+}).then(console.log)
+```
+
+# thenable的执行时机
+
+1. 在Promise完成之前，先调用了then方法（注册了thenable），当Promise完成时，所有注册的thenable进入微队列
+2. 在Promise完成之后，再调用了then方法，thenable直接进入微队列
+
+```js
+new Promise((res) => {
+  res(2)
+  new Promise((res) => res(5)).then(console.log)
+}).then(console.log)
+
+new Promise((res) => {
+  setTimeout(() => {
+    res(2)
+    new Promise((res) => res(5)).then(console.log)
+  }, 1000)
+}).then(console.log)
+```
+
+promise的状态吸收
+
+```js
+const p1 = Promise.resolve(1)
+const p2 = new Promise((res) => res(p1))
+
+p2.then(() => {
+  console.log(2)
+})
+
+p1.then(() => {
+  console.log(1)
+}).then(() => {
+  console.log(4)
+})
+
+console.log(3)
+// 3 1 4 2
+```
