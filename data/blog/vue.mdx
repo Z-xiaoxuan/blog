@@ -11,14 +11,15 @@ summary: 'Vue'
 数组代理对象的问题
 
 1. 数组在被代理后，由于深度递归响应式代理，如果其中包含一个对象数据类型。访问代理后的数组，这个对象也是被代理过的。如果用原对象去找就会和这个代理对象去比较，从而出现问题
+
 ```js
 // 问题复现
 const obj = {
-    a:1,
-    b:2
+  a: 1,
+  b: 2,
 }
 
-const proxyArr = reactive([1,obj,20])
+const proxyArr = reactive([1, obj, 20])
 
 proxyArr.includes(obj) // 打印结果会为false
 ```
@@ -26,7 +27,6 @@ proxyArr.includes(obj) // 打印结果会为false
 解决方案：
 
 重写数组的一些读取方法，先正常找，找不到再从原始数据中找
-
 
 2. 数组长度的隐式变化无法触发派发更新
 
@@ -54,83 +54,83 @@ proxyObj.a = 2
 effect传入的回调函数，期望和其中使用到的代理对象建立连接，当代理对象发生改变时，此回调函数需要重新运行。
 
 具体实现:
-```js
 
+```js
 let activeEffect = null // 用来存放当前需要收集的函数
 const depsMap = new Map()
 
 // 依赖收集
-function track(target,key){
-    if(activeEffect){
-        const deps = depsMap.get(key)
-        if(!deps){
-            deps = new Set()
-            depsMap.set(key,deps)
-        }
-        deps.add(activeEffect)
+function track(target, key) {
+  if (activeEffect) {
+    const deps = depsMap.get(key)
+    if (!deps) {
+      deps = new Set()
+      depsMap.set(key, deps)
     }
+    deps.add(activeEffect)
+  }
 }
 
 // 派发更新
-function trigger(target,key){
-    const deps = depsMap.get(key)
-    if(deps){
-        deps.forEach(effect => effect());
-    }
+function trigger(target, key) {
+  const deps = depsMap.get(key)
+  if (deps) {
+    deps.forEach((effect) => effect())
+  }
 }
 
 const data = {
-    a: 1,
-    b: 2,
-    c: 3
+  a: 1,
+  b: 2,
+  c: 3,
 }
 
-const state = new Proxy(data,{
-    get(target,key){
-        track(target,key)
-        return target[key]
-    },
-    set(target,key,value){
-        target[key] = value
-        trigger(target,key)
-        return true
-    }
+const state = new Proxy(data, {
+  get(target, key) {
+    track(target, key)
+    return target[key]
+  },
+  set(target, key, value) {
+    target[key] = value
+    trigger(target, key)
+    return true
+  },
 })
 
-function effect(fn){
-    activeEffect = fn
-    fn()
-    activeEffect = null
+function effect(fn) {
+  activeEffect = fn
+  fn()
+  activeEffect = null
 }
 
 effect(() => {
-    console.log(state.a)
+  console.log(state.a)
 })
-
 ```
 
 以上实现的第一版有一个问题： 以下代码执行收集只执行了一次，因为收集逻辑是靠`activeEffect`为真来触发的。
 
 ```js
 effect(() => {
-    if(state.a === 1){
-        console.log(state.b)
-    }else{
-        console.log(state.c)
-    }
+  if (state.a === 1) {
+    console.log(state.b)
+  } else {
+    console.log(state.c)
+  }
 })
 
 state.a = 10
 ```
 
 第一版解决方式:
+
 ```JS
 function effect(fn){
     const environment = () => {
         activeEffect = environment
         fn()
         activeEffect = null
-    }                                                                         
+    }
 }
 ```
 
@@ -139,37 +139,38 @@ function effect(fn){
 但是第二次是`a`、`b`和`c`。所以说需要清除之前的依赖
 
 第二版解决方式
+
 ```js
-function track(target,key){
-    if(activeEffect){
-        const deps = depsMap.get(key)
-        if(!deps){
-            deps = new Set()
-            depsMap.set(key,deps)
-        }
-        deps.add(activeEffect)
-        activeEffect.deps.push(deps)
+function track(target, key) {
+  if (activeEffect) {
+    const deps = depsMap.get(key)
+    if (!deps) {
+      deps = new Set()
+      depsMap.set(key, deps)
     }
+    deps.add(activeEffect)
+    activeEffect.deps.push(deps)
+  }
 }
 
-function effect(fn){
-    const environment = () => {
-        activeEffect = environment
-        cleanup(environment)
-        fn()
-        activeEffect = null
-    }
-    
-    environment.deps = []
+function effect(fn) {
+  const environment = () => {
+    activeEffect = environment
+    cleanup(environment)
+    fn()
+    activeEffect = null
+  }
+
+  environment.deps = []
 }
 
-function cleanup(env){
-    const deps = env.deps
-    if(deps.length){
-        deps.foreach((set) => {
-            set.delete(env)
-        })
-    }
+function cleanup(env) {
+  const deps = env.deps
+  if (deps.length) {
+    deps.foreach((set) => {
+      set.delete(env)
+    })
+  }
 }
 ```
 
@@ -177,7 +178,8 @@ function cleanup(env){
 待解决...
 
 最后一个问题：effect的嵌套问题,c会收集不到。问题就是 `activeEffect = null`的执行栈出问题。
-```JS 
+
+```JS
 effect(() => {
     effect(() => {
         state.b
@@ -188,7 +190,9 @@ effect(() => {
     state.c
 })
 ```
+
 我们可以模拟一个执行栈
+
 ```JS
 const activeEffectStack = []
 function effect(fn){
@@ -201,7 +205,7 @@ function effect(fn){
         activeEffectStack.pop()
         activeEffect = activeEffectStack[activeEffectStack.length - 1]
     }
-    
+
     environment.deps = []
 }
 ```
@@ -219,13 +223,14 @@ vue3多更新了组合式API的风格，但是还是会有一些重复的体力�
 # v-module
 
 两种应用的场景：
+
 1. 表单元素和响应式数据的双相绑定
-2. 父子组件传递数据 
+2. 父子组件传递数据
 
 # computed
 
-
 开发者的两种使用方法
+
 ```JS
 // 第一种
 const state = reactive({
@@ -284,7 +289,7 @@ function computed(param){
 
     let dirty = true //是否为脏值
     let value
-    
+
     // 建立依赖关系
     const fn = effect(getter,{
         lazy: true
@@ -304,7 +309,7 @@ function computed(param){
             return value
         },
         set value(newValue){
- 
+
             setter(newValue)
         }
     }
@@ -317,3 +322,55 @@ const fullName = computed(() => {
 ```
 
 # watch
+
+```js
+/*
+ *
+ */
+function watch(source,cb,options){
+    // 参数的归一化
+    let getter
+    if(typeof  source === 'function'){
+        getter = source
+    }else{
+        getter = () => traves()
+    }
+
+    let newValue
+    let oldValue
+
+
+    const effectFn = effect(getter,{
+        scheduler:{
+            newValue = effectFn()
+            cb(newValue,oldValue)
+            oldValue = newValue
+        }
+    })
+}
+```
+
+# 组件通信大全
+
+父子组件通信
+
+1. Props
+2. Emit
+3. ref引用，defineExpose
+4. v-module
+5. 属性透传：一些没有被组件声明为props、emits或自定义事件的属性，但依然能传递给子组件，如常见的class、style、id，子组件默认是传递在根节点，可以自己定义
+6. 作用域插槽： 子组件在设置`slot`的时候，上面绑定一些属性，回头父组件可以通过`v-slot`来获取
+
+跨层级组件通信
+
+1. 依赖注入
+2. 事件总线
+3. 自定义数据仓库
+4. pinia
+5. 路由传参
+
+# keep-alive
+
+本质上就是把内部组件搬运到一个隐藏容器中，或者从这个隐藏容器中拿出来，因为不涉及到组件真正的卸载所以可以保留组件的状态
+
+# v-if和v-for

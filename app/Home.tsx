@@ -334,7 +334,7 @@ export default function Home() {
       </div>
       <Image
         id="avatar1"
-        src="/static/images/sparrowhawk-avatar.jpg"
+        src="/static/images/b.png"
         alt="avatar"
         className="absolute"
         fill={true}
@@ -342,7 +342,7 @@ export default function Home() {
       />
       <Image
         id="avatar2"
-        src="/static/images/sparrowhawk-avatar.jpg"
+        src="/static/images/b.png"
         alt="avatar"
         fill={true}
         objectFit="cover"
@@ -350,7 +350,7 @@ export default function Home() {
       />
       <Image
         id="avatar3"
-        src="/static/images/sparrowhawk-avatar.jpg"
+        src="/static/images/b.png"
         alt="avatar"
         fill={true}
         objectFit="cover"
@@ -358,7 +358,7 @@ export default function Home() {
       />
       <Image
         id="avatar4"
-        src="/static/images/sparrowhawk-avatar.jpg"
+        src="/static/images/b.png"
         alt="avatar"
         fill={true}
         objectFit="cover"
