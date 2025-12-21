@@ -3,7 +3,7 @@ const siteMetadata = {
   title: 'Xiao xuan',
   author: 'Xiao xuan',
   headerTitle: '我的博客',
-  description: '生活记录 | 技术记录 | 随想',
+  description: 'I build Software share Life & Design.',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',

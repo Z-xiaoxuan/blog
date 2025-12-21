@@ -7,6 +7,11 @@ import ScrollTrigger from 'gsap/ScrollTrigger'
 import SplitText from 'gsap/SplitText'
 import Image from 'next/image'
 import Header from '@/components/Header'
+import { formatDate } from 'pliny/utils/formatDate'
+import Link from '@/components/Link'
+import siteMetadata from '@/data/siteMetadata'
+import Tag from '@/components/Tag'
+import SocialIcon from '@/components/social-icons'
 
 // Register plugins
 gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -29,6 +34,7 @@ const TAGS = [
 const DURATION = 15000
 const ROWS = 3
 const TAGS_PER_ROW = 6
+const MAX_DISPLAY = 2
 
 const shuffle = (arr) => [...arr].sort()
 
@@ -49,108 +55,89 @@ const InfiniteLoopSlider = ({ children, duration, reverse = false }) => {
   )
 }
 
-const Tag = ({ text }) => (
+const Tags = ({ text }) => (
   <div className="mr-4 flex items-center gap-x-1 rounded-md bg-slate-700 px-4 py-2 text-sm text-gray-200 shadow-md shadow-black/70 select-none">
     <span className="text-lg leading-none text-gray-400">#</span> {text}
   </div>
 )
 
-export default function Home() {
-  const boxRef = useRef<HTMLDivElement>(null)
-  const tl = useRef<GSAPTimeline>(gsap.timeline())
-
-  useGSAP(
-    () => {
-      // Clear any existing ScrollTriggers
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
-
-      const split = new SplitText('#text', {
-        type: 'lines',
-        linesClass: 'line',
-      })
-
-      // Create new timeline
-      tl.current = gsap.timeline()
-
-      tl.current
-        .to(split.lines, {
-          rotationX: -100,
-          transformOrigin: '50% 50% -60px',
-          opacity: 0,
-          ease: 'power3',
-          stagger: 0.25,
-        })
-        .to('#avatar4', {
-          scale: 0,
-          ease: 'power1.in',
-          delay: 0,
-        })
-        .to(
-          '#avatar3',
-          {
-            scale: 0,
-            ease: 'power1.in',
-            delay: 0.1,
-          },
-          '<'
-        )
-        .to(
-          '#avatar2',
-          {
-            scale: 0,
-            ease: 'power1.in',
-            delay: 0.1,
-          },
-          '<'
-        )
-        .to(
-          '#avatar1',
-          {
-            scale: 0,
-            ease: 'power1.in',
-            delay: 0.1,
-          },
-          '<'
-        )
-        .from('.grid-item', {
-          opacity: 0,
-          y: 500,
-          ease: 'power3.in',
-          stagger: 0.1,
-        })
-        .from(
-          '#header',
-          {
-            opacity: 0,
-          },
-          '<'
-        )
-
-      // Create ScrollTrigger
-      ScrollTrigger.create({
-        animation: tl.current,
-        trigger: boxRef.current,
-        start: 'top top',
-        end: '+=100%',
-        markers: true,
-        pin: true,
-        scrub: 1,
-      })
-
-      // Cleanup function
-      return () => {
-        ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
-        tl.current.kill()
-      }
-    },
-    { scope: boxRef }
-  ) // Added scope for better cleanup
-
+export default function Home({ posts }) {
   return (
-    <div ref={boxRef} className="relative h-screen">
-      <Header />
+    <div className="mx-auto lg:max-w-3xl">
+      <h1 className="text-7xl">Hello !</h1>
+      <h2 className="my-4 text-3xl">{siteMetadata.description}</h2>
 
-      <div className="relative top-20 mx-auto max-w-5xl bg-pink-400">
+      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+        {!posts.length && 'No posts found.'}
+        {posts.slice(0, MAX_DISPLAY).map((post) => {
+          const { slug, date, title, summary, tags } = post
+          return (
+            <li key={slug} className="py-8">
+              <article>
+                <div className="space-y-2 xl:grid xl:grid-cols-4 xl:items-baseline xl:space-y-0">
+                  <dl>
+                    <dt className="sr-only">Published on</dt>
+                    <dd className="text-base leading-6 font-medium text-gray-500 dark:text-gray-400">
+                      <time dateTime={date}>{formatDate(date, siteMetadata.locale)}</time>
+                    </dd>
+                  </dl>
+                  <div className="space-y-5 xl:col-span-3">
+                    <div className="space-y-6">
+                      <div>
+                        <h2 className="text-2xl leading-8 font-bold tracking-tight">
+                          <Link href={`/blog/${slug}`} className="text-gray-900 dark:text-gray-100">
+                            {title}
+                          </Link>
+                        </h2>
+                        <div className="flex flex-wrap">
+                          {tags.map((tag) => (
+                            <Tag key={tag} text={tag} />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="prose max-w-none text-gray-500 dark:text-gray-400">
+                        {summary}
+                      </div>
+                    </div>
+                    <div className="text-base leading-6 font-medium">
+                      <Link
+                        href={`/blog/${slug}`}
+                        className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+                        aria-label={`Read more: "${title}"`}
+                      >
+                        Read more &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </li>
+          )
+        })}
+      </ul>
+
+      {posts.length > MAX_DISPLAY && (
+        <div className="flex justify-end text-base leading-6 font-medium">
+          <Link
+            href="/blog"
+            className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="All posts"
+          >
+            All Posts &rarr;
+          </Link>
+        </div>
+      )}
+
+      <div>
+        <h2 className="mb-6 text-lg font-medium text-gray-500 dark:text-gray-400">SOCIAL</h2>
+        <div className="mb-3 flex gap-4">
+          <SocialIcon kind="github" href={siteMetadata.github} size={8} />
+          <SocialIcon kind="mail" href={`mailto:${siteMetadata.email}`} size={8} />
+          <SocialIcon kind="weChat" href={siteMetadata.github} size={8} />
+        </div>
+      </div>
+
+      <div className="mx-auto mt-20 hidden">
         <div
           className="grid grid-cols-8 gap-3"
           style={{
@@ -167,7 +154,7 @@ export default function Home() {
             <div className="h-40"></div>
             <p>现居地：北京</p>
           </div>
-          <div className="grid-item h-31 rounded-md bg-gray-900" style={{ gridArea: 'tall' }}>
+          <div className="grid-item h-30 rounded-md bg-gray-900" style={{ gridArea: 'tall' }}>
             <svg
               width="50"
               height="100"
@@ -219,9 +206,7 @@ export default function Home() {
               height={150}
               width={150}
             />
-            <p className="mt-4 text-center text-sm">
-              虎砸 <br /> <span className="text-xs text-gray-400">（一只起司）</span>
-            </p>
+            <p className="mt-4 text-center text-sm">虎砸</p>
           </div>
           <div className="grid-item rounded-md bg-gray-900 p-3" style={{ gridArea: 'cat2' }}>
             <Image
@@ -231,9 +216,7 @@ export default function Home() {
               height={150}
               width={150}
             />
-            <p className="mt-4 text-center text-sm">
-              大头 <br /> <span className="text-xs text-gray-400">（一只金点）</span>
-            </p>
+            <p className="mt-4 text-center text-sm">大头</p>
           </div>
           <div
             className="grid-item relative h-40 overflow-hidden rounded-md bg-gray-900"
@@ -279,7 +262,7 @@ export default function Home() {
                   {shuffle(TAGS)
                     .slice(0, TAGS_PER_ROW)
                     .map((tag) => (
-                      <Tag text={tag} key={tag} />
+                      <Tags text={tag} key={tag} />
                     ))}
                 </InfiniteLoopSlider>
               ))}
@@ -331,50 +314,6 @@ export default function Home() {
             <p>喜欢吃辣</p>
           </div>
         </div>
-      </div>
-      <Image
-        id="avatar1"
-        src="/static/images/b.png"
-        alt="avatar"
-        className="absolute"
-        fill={true}
-        objectFit="cover"
-      />
-      <Image
-        id="avatar2"
-        src="/static/images/b.png"
-        alt="avatar"
-        fill={true}
-        objectFit="cover"
-        className="absolute"
-      />
-      <Image
-        id="avatar3"
-        src="/static/images/b.png"
-        alt="avatar"
-        fill={true}
-        objectFit="cover"
-        className="absolute"
-      />
-      <Image
-        id="avatar4"
-        src="/static/images/b.png"
-        alt="avatar"
-        fill={true}
-        objectFit="cover"
-        className="absolute"
-      />
-      <div className="desc absolute inset-0 flex h-screen items-center justify-center">
-        <p id="text" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <span className="text-2xl">一名软件开发工程师🧑‍💻</span>
-          <br />
-          这里会分享我的一些生活、技术总结、以及喜欢的影视剧
-          <br />
-          目前在自学吉他中～
-          <a href="/friends" className="text-2xl font-bold hover:underline">
-            I'm animated!
-          </a>
-        </p>
       </div>
     </div>
   )

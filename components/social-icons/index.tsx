@@ -1,9 +1,10 @@
-import { Mail, Github, XiaoHongShu } from './icons'
+import { Mail, Github, XiaoHongShu, WeChat } from './icons'
 
 const components = {
   mail: Mail,
   github: Github,
   xiaohongshu: XiaoHongShu,
+  weChat: WeChat,
 }
 
 type SocialIconProps = {
@@ -22,15 +23,10 @@ const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
   const SocialSvg = components[kind]
 
   return (
-    <a
-      className="text-sm text-gray-500 transition hover:text-gray-600"
-      target="_blank"
-      rel="noopener noreferrer"
-      href={href}
-    >
+    <a className="transition" target="_blank" rel="noopener noreferrer" href={href}>
       <span className="sr-only">{kind}</span>
       <SocialSvg
-        className={`hover:text-primary-500 dark:hover:text-primary-400 fill-current text-gray-700 dark:text-gray-200 h-${size} w-${size}`}
+        className={`hover:text-primary-500 dark:hover:text-primary-400 fill-current transition-all hover:scale-105 hover:brightness-90 active:scale-90 dark:hover:brightness-150 h-${size} w-${size}`}
       />
     </a>
   )
