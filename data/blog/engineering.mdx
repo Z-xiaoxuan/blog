@@ -372,6 +372,30 @@ module.export = {
 }
 ```
 
+# CSS工程化
+
+## 解决类名冲突
+
+1. BEM 规定类名的约定
+2. css-in-js用对象来表示css属性
+3. css Module
+
+## 预编译器
+
+在开发css的时候，由于语法本身的原因，比如没有可利用的重复代码片段、变量等等，在大型项目中开发会非常的困难。
+所以我们希望可以用一种语言以更优雅的表达方式来书写样式，所以社区中诞生了类似`less`、`sass`这些语言，这些语言完全支持css，但同时也给了用户更加舒适的编程环境。
+但是浏览器最终看不懂这些代码，所以我们需要编译器把这些`高级的css语法`转换为css。这就是预编译器。
+
+单独使用预编译器，需要下载。如果使用webpack只需要下载对应的loader即可
+
+## PostCss
+
+如今，css的工程化还没有一个标准的处理方式，postcss是希望可以统一大部分的css处理方式。
+
+它和预编译器类似，也是一个编译器，不过它需要配置插件来完成对css处理。
+
+单独使用，也是需要下载，通过它的脚手架来使用。如果使用webpack，也是下载对应的loader即可（注意postcss对应的配置文件）。
+
 # 性能优化
 
 工程化方面的性能优化主要包括：构建性能、传输性能、运行性能
@@ -381,3 +405,138 @@ module.export = {
 传输性能：包括总的传输量（减少重复代码）、文件数量（请求次数）、浏览器缓存
 
 运行性能：主要是代码层面的，打包影响的不多
+
+## 构建性能优化
+
+1. 减少模块解析：将没有依赖的模块或者已经打包好的模块（三方库），跳过抽象语法树分析，如果有loader，loader之后的代码就是最终结果，如果没有loader，源代码就是最终的结果。
+
+2. 优化loader性能：
+   - 减少loader模块
+   - 增加loader-catch
+   - 开启多线程
+
+## 传输新能优化
+
+1. 分包：将一个整体的代码，分到不同的文件中
+
+好处：降低打包体积，同时对于公共库的拆分可以利用浏览器的缓存机制
+
+时机：多处使用的公共模块，还有大型的第三方库（最好是没有其他依赖）
+
+### 手动分包
+
+流程：先打包好公共模块，打包环境用开发环境，打包模式用库的打包方式，结果要用全局变量导出来；
+建立一个存放资源目录的文件夹，用于后续正常项目打包；
+
+用到的插件：`DllPlugin` `DllReferencePlugin`
+
+### 自动分包
+
+### 代码压缩
+
+会更换更少的字符的变量名，以及移除注释、空格等无用代码
+
+terser-webpack-plugin
+
+对于纯函数和副作用函数，代码压缩对于没有导入的纯函数会直接删除掉，但是副作用函数不会。
+
+可以在 `package.json` 中添加 `sideEffects` 属性来告诉 webpack 哪些文件是有副作用的，从而避免这些文件被删除。
+
+### tree Shaking
+
+作用：对于导入的模块，删除没有使用的其他函数代码
+
+场景一：对于自己在写代码使用导入和导出，最好避免默认导出，而是使用命名导出，这样就可以在tree Shaking的时候删除没有使用的函数代码。
+
+场景二：对于第三方库，去找ES版本；CommonJS版本的话可以使用同步导入，会加大Tree Shaking的难度。
+
+作用域分析：对于一些 dead code ，webpack的tree Shaking还是识别不到，需要插件深度分析AST去解决。
+
+比如：
+
+```js:myMath.js
+import {chunk} from 'lodash'
+
+export function add(a,b){
+    return a + b
+}
+export function subtract(a,b){
+    return a - b
+}
+export function myChunk(a,b){
+    return chunk(a,b)
+}
+```
+
+```js:index.js
+import {myChunk} from './myMath'
+
+console.log(add(2,2))
+```
+
+以上代码并没有使用myChunk函数，但是打包后还是会有Lodash的代码。
+
+要解决这个问题就需要加入插件去分析 `webpack-deep-scope-plugin`
+
+副作用： tree shaking的第一大原则就是：在保证代码正确运行的情况下，做代码的删减。所以对于一些确定不了是否是副作用的模块，就会把他当作副作用模块不做处理。
+
+我们可以通过在`package.json`中添加`sideEffects`属性来告诉webpack哪些文件是有副作用的，从而避免这些文件被删除。
+
+```json:package.json
+{
+    "sideEffects": false // boolean的话会太暴力，推荐使用数组
+}
+```
+
+css tree Shaking
+
+webpack的tree shaking是基于ES Module的，对css是无能为力的，所以需要第三方插件。但是如果使用的是css Module的话，也不行。
+
+### 懒加载
+
+有些代码在初始化阶段是没有执行的，比如：
+
+```js:index.js
+import { chunk } from 'lodash'
+
+const buttonDom = document.getElementById('button')
+buttonDom.addEventListener('click', () => {
+    console.log(chunk([1,2,3,4,5], 2))
+})
+```
+
+如果该回调用户首次点击的频率不高，我们可以将这个包拆分出来，使用异步加载。减少首次传输的体积。
+
+```js:index.js
+const buttonDom = document.getElementById('button')
+
+buttonDom.addEventListener('click', () => {
+    const { chunk } = await import(/* webpackChunkName: "lodash" */ 'lodash')
+    console.log(chunk([1,2,3,4,5], 2))
+})
+
+```
+
+上述代码就是模块懒加载的例子，打包会从拆出来一个lodash的包，然后异步加载。
+
+高阶玩法：这样使用异步加载的策略，由于是动态导入，所以webpack无法tree Shaking的难度。
+
+想要解决这个问题，可以包一层：
+
+```js:index.js
+const buttonDom = document.getElementById('button')
+buttonDom.addEventListener('click', () => {
+    const { chunk } = await import(/* webpackChunkName: "lodash" */ './tools')
+    console.log(chunk([1,2,3,4,5], 2))
+})
+```
+
+```js:tools.js
+export { chunk } from 'lodash'
+```
+
+## 其他优化
+
+### 代码风格优化 ESLint
+
+### bundle analyzer
