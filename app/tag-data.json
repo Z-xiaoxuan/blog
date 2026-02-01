@@ -1,6 +1,6 @@
 {
   "浏览器": 1,
-  "code-tool": 1,
+  "code-tool": 4,
   "css": 4,
   "filter": 1,
   "布局": 1,
@@ -8,5 +8,12 @@
   "engineering": 1,
   "html": 1,
   "js": 1,
+  "npm": 1,
+  "vue": 1,
+  "effect": 1,
+  "proxy": 1,
+  "computed": 1,
+  "watch": 1,
+  "组件通信": 1,
   "language": 1
 }
